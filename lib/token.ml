@@ -1,17 +1,50 @@
 (* lib/token.ml *)
 type t =
-  | Int    of int
-  | Str    of string
-  | Name   of string
-  | Auto | Extrn | If | Else | While | Switch | Case
-  | Default | Goto | Return | Break
-  | Plus | Minus | Star | Slash | Percent
-  | Eq | EqEq | Bang | BangEq
-  | Lt | LtEq | Gt | GtEq
-  | Amp | Pipe | Caret | Tilde
-  | LtLt | GtGt
-  | AmpAmp | PipePipe
-  | PlusPlus | MinusMinus
-  | LParen | RParen | LBrace | RBrace | LBracket | RBracket
-  | Semi | Comma | Colon | Question
+  | Int of int
+  | Str of string
+  | Name of string
+  | Auto
+  | Extrn
+  | If
+  | Else
+  | While
+  | Switch
+  | Case
+  | Default
+  | Goto
+  | Return
+  | Break
+  | Plus
+  | Minus
+  | Star
+  | Slash
+  | Percent
+  | Eq
+  | EqEq
+  | Bang
+  | BangEq
+  | Lt
+  | LtEq
+  | Gt
+  | GtEq
+  | Amp
+  | Pipe
+  | Caret
+  | Tilde
+  | LtLt
+  | GtGt
+  | AmpAmp
+  | PipePipe
+  | PlusPlus
+  | MinusMinus
+  | LParen
+  | RParen
+  | LBrace
+  | RBrace
+  | LBracket
+  | RBracket
+  | Semi
+  | Comma
+  | Colon
+  | Question
   | Eof
