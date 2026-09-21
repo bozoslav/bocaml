@@ -51,7 +51,7 @@ let string_of_token = function
   | Token.Eof -> "Eof"
 
 let () =
-  let source = " (+) [-] /*}" in
+  let source = "(8,12,)" in
   let tokens = Bocaml.Lexer.lex source in
 
   List.iter (fun token -> print_endline (string_of_token token)) tokens

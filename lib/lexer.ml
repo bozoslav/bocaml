@@ -9,6 +9,10 @@ let is_alnum c = is_letter c || is_digit c
 let lex source =
   let n = String.length source in
 
+  let rec number_end j =
+    if j < n && is_digit source.[j] then number_end (j + 1) else j
+  in
+
   let rec scan i tokens =
     if i >= n then List.rev (Eof :: tokens)
     else
@@ -39,6 +43,19 @@ let lex source =
       | ',' -> scan (i + 1) (Comma :: tokens)
       | ':' -> scan (i + 1) (Colon :: tokens)
       | '?' -> scan (i + 1) (Question :: tokens)
+      (* ints *)
+      | c when is_digit c ->
+          let stop = number_end i in
+          let text = String.sub source i (stop - i) in
+          let value =
+            match int_of_string_opt text with
+            | Some n -> n
+            | None ->
+                failwith
+                  (Printf.sprintf "Integer out of range at position %d: %s" i
+                     text)
+          in
+          scan stop (Int value :: tokens)
       | c -> raise (Lexer_error c)
   in
 
