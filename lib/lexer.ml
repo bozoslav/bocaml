@@ -6,11 +6,30 @@ let is_digit c = c >= '0' && c <= '9'
 let is_letter c = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c = '_'
 let is_alnum c = is_letter c || is_digit c
 
+let keyword_or_name word =
+  match word with
+  | "auto" -> Auto
+  | "extrn" -> Extrn
+  | "if" -> If
+  | "else" -> Else
+  | "while" -> While
+  | "switch" -> Switch
+  | "case" -> Case
+  | "default" -> Default
+  | "goto" -> Goto
+  | "return" -> Return
+  | "break" -> Break
+  | _ -> Name word
+
 let lex source =
   let n = String.length source in
 
   let rec number_end j =
     if j < n && is_digit source.[j] then number_end (j + 1) else j
+  in
+
+  let rec indentifier_end j =
+    if j < n && is_alnum source.[j] then indentifier_end (j + 1) else j
   in
 
   let rec scan i tokens =
@@ -56,6 +75,12 @@ let lex source =
                      text)
           in
           scan stop (Int value :: tokens)
+      (* keyword / name *)
+      | c when is_letter c ->
+          let stop = indentifier_end i in
+          let word = String.sub source i (stop - i) in
+          let token = keyword_or_name word in
+          scan stop (token :: tokens)
       | c -> raise (Lexer_error c)
   in
 
