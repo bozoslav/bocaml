@@ -51,7 +51,7 @@ let string_of_token = function
   | Token.Eof -> "Eof"
 
 let () =
-  let source = "auto automatic; automatic = 77;" in
+  let source = "a == 42; b != 3; count++; x <= 9;" in
   let tokens = Bocaml.Lexer.lex source in
 
   List.iter (fun token -> print_endline (string_of_token token)) tokens

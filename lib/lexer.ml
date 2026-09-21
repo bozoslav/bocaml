@@ -39,17 +39,9 @@ let lex source =
       (* whitespace *)
       | ' ' | '\n' | '\t' | '\r' -> scan (i + 1) tokens
       (* one char tokens *)
-      | '+' -> scan (i + 1) (Plus :: tokens)
-      | '-' -> scan (i + 1) (Minus :: tokens)
       | '*' -> scan (i + 1) (Star :: tokens)
       | '/' -> scan (i + 1) (Slash :: tokens)
       | '%' -> scan (i + 1) (Percent :: tokens)
-      | '=' -> scan (i + 1) (Eq :: tokens)
-      | '!' -> scan (i + 1) (Bang :: tokens)
-      | '<' -> scan (i + 1) (Lt :: tokens)
-      | '>' -> scan (i + 1) (Gt :: tokens)
-      | '&' -> scan (i + 1) (Amp :: tokens)
-      | '|' -> scan (i + 1) (Pipe :: tokens)
       | '^' -> scan (i + 1) (Caret :: tokens)
       | '~' -> scan (i + 1) (Tilde :: tokens)
       | '(' -> scan (i + 1) (LParen :: tokens)
@@ -62,6 +54,40 @@ let lex source =
       | ',' -> scan (i + 1) (Comma :: tokens)
       | ':' -> scan (i + 1) (Colon :: tokens)
       | '?' -> scan (i + 1) (Question :: tokens)
+      (* two char tokens *)
+      | '=' ->
+          if i + 1 < n && source.[i + 1] = '=' then scan (i + 2) (EqEq :: tokens)
+          else scan (i + 1) (Eq :: tokens)
+      | '!' ->
+          if i + 1 < n && source.[i + 1] = '=' then
+            scan (i + 2) (BangEq :: tokens)
+          else scan (i + 1) (Bang :: tokens)
+      | '+' ->
+          if i + 1 < n && source.[i + 1] = '+' then
+            scan (i + 2) (PlusPlus :: tokens)
+          else scan (i + 1) (Plus :: tokens)
+      | '-' ->
+          if i + 1 < n && source.[i + 1] = '-' then
+            scan (i + 2) (MinusMinus :: tokens)
+          else scan (i + 1) (Minus :: tokens)
+      | '<' ->
+          if i + 1 < n && source.[i + 1] = '=' then scan (i + 2) (LtEq :: tokens)
+          else if i + 1 < n && source.[i + 1] = '<' then
+            scan (i + 2) (LtLt :: tokens)
+          else scan (i + 1) (Lt :: tokens)
+      | '>' ->
+          if i + 1 < n && source.[i + 1] = '=' then scan (i + 2) (GtEq :: tokens)
+          else if i + 1 < n && source.[i + 1] = '>' then
+            scan (i + 2) (GtGt :: tokens)
+          else scan (i + 1) (Gt :: tokens)
+      | '&' ->
+          if i + 1 < n && source.[i + 1] = '&' then
+            scan (i + 2) (AmpAmp :: tokens)
+          else scan (i + 1) (Amp :: tokens)
+      | '|' ->
+          if i + 1 < n && source.[i + 1] = '|' then
+            scan (i + 2) (PipePipe :: tokens)
+          else scan (i + 1) (Pipe :: tokens)
       (* ints *)
       | c when is_digit c ->
           let stop = number_end i in
