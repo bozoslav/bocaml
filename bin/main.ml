@@ -61,9 +61,9 @@ let string_of_binop = function
 
 let rec string_of_expr = function
   | Ast.Int n -> Printf.sprintf "Int(%d)" n
-  
   | Ast.Binop (op, left, right) ->
-    Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op) (string_of_expr left) (string_of_expr right)
+      Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op)
+        (string_of_expr left) (string_of_expr right)
 
 let () =
   (*
@@ -88,8 +88,7 @@ let () =
       Printf.eprintf "Lexer error: %s\n" message;
       exit 1
   *)
-
-  let source = "10 - 2 - 3" in
+  let source = "10 - 2 - 3 * 5" in
 
   let tokens = Bocaml.Lexer.lex source in
   let expression = Bocaml.Parser.parse tokens in
