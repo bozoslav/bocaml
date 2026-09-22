@@ -38,6 +38,12 @@ let lex source =
     else comment_end (j + 1)
   in
 
+  let rec string_end j =
+    if j >= n then failwith "Unterminated string"
+    else if source.[j] = '"' then j
+    else string_end (j + 1)
+  in
+
   let rec scan i tokens =
     if i >= n then List.rev (Eof :: tokens)
     else
@@ -118,6 +124,11 @@ let lex source =
             let stop = comment_end (i + 2) in
             scan stop tokens
           else scan (i + 1) (Slash :: tokens)
+      (* string literals *)
+      | '"' ->
+          let stop = string_end (i + 1) in
+          let text = String.sub source (i + 1) (stop - i - 1) in
+          scan (stop + 1) (Str text :: tokens)
       | c -> raise (Lexer_error c)
   in
 
