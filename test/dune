@@ -1,0 +1,3 @@
+(test
+ (name lexer_test)
+ (libraries bocaml))
