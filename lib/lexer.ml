@@ -32,6 +32,12 @@ let lex source =
     if j < n && is_alnum source.[j] then indentifier_end (j + 1) else j
   in
 
+  let rec comment_end j =
+    if j + 1 >= n then failwith "Unterminated comment"
+    else if source.[j] = '*' && source.[j + 1] = '/' then j + 2
+    else comment_end (j + 1)
+  in
+
   let rec scan i tokens =
     if i >= n then List.rev (Eof :: tokens)
     else
@@ -40,7 +46,6 @@ let lex source =
       | ' ' | '\n' | '\t' | '\r' -> scan (i + 1) tokens
       (* one char tokens *)
       | '*' -> scan (i + 1) (Star :: tokens)
-      | '/' -> scan (i + 1) (Slash :: tokens)
       | '%' -> scan (i + 1) (Percent :: tokens)
       | '^' -> scan (i + 1) (Caret :: tokens)
       | '~' -> scan (i + 1) (Tilde :: tokens)
@@ -107,6 +112,12 @@ let lex source =
           let word = String.sub source i (stop - i) in
           let token = keyword_or_name word in
           scan stop (token :: tokens)
+      (* comments *)
+      | '/' ->
+          if i + 1 < n && source.[i + 1] = '*' then
+            let stop = comment_end (i + 2) in
+            scan stop tokens
+          else scan (i + 1) (Slash :: tokens)
       | c -> raise (Lexer_error c)
   in
 
