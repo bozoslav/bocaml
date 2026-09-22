@@ -38,10 +38,33 @@ let lex source =
     else comment_end (j + 1)
   in
 
-  let rec string_end j =
-    if j >= n then failwith "Unterminated string"
-    else if source.[j] = '"' then j
-    else string_end (j + 1)
+  let read_string start =
+    let buffer = Buffer.create 16 in
+
+    let rec loop j =
+      if j >= n then failwith "Unterminated string"
+      else
+        match source.[j] with
+        | '"' -> (Buffer.contents buffer, j + 1)
+        | '*' ->
+            if j + 1 >= n then failwith "Unterminated string escape"
+            else
+              let escaped =
+                match source.[j + 1] with
+                | 'n' -> '\n'
+                | 't' -> '\t'
+                | '*' -> '*'
+                | '"' -> '"'
+                | c -> failwith (Printf.sprintf "Unknown string escape: *%c" c)
+              in
+              Buffer.add_char buffer escaped;
+              loop (j + 2)
+        | c ->
+            Buffer.add_char buffer c;
+            loop (j + 1)
+    in
+
+    loop start
   in
 
   let rec scan i tokens =
@@ -126,9 +149,8 @@ let lex source =
           else scan (i + 1) (Slash :: tokens)
       (* string literals *)
       | '"' ->
-          let stop = string_end (i + 1) in
-          let text = String.sub source (i + 1) (stop - i - 1) in
-          scan (stop + 1) (Str text :: tokens)
+          let text, stop = read_string (i + 1) in
+          scan stop (Str text :: tokens)
       | c -> raise (Lexer_error c)
   in
 

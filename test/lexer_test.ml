@@ -100,7 +100,12 @@ let test_strings () =
   assert (Lexer.lex "\"\"" = [ Str ""; Eof ]);
   assert (Lexer.lex "\"hello\";" = [ Str "hello"; Semi; Eof ]);
   assert (Lexer.lex "\"one\"\"two\"" = [ Str "one"; Str "two"; Eof ]);
-  assert (Lexer.lex "\"auto + /* text */\"" = [ Str "auto + /* text */"; Eof ])
+  assert (Lexer.lex {|"auto + /** text **/"|} = [ Str "auto + /* text */"; Eof ]);
+  assert (Lexer.lex {|"hello*nworld"|} = [ Str "hello\nworld"; Eof ]);
+  assert (Lexer.lex {|"a*tb"|} = [ Str "a\tb"; Eof ]);
+  assert (Lexer.lex {|"a**b"|} = [ Str "a*b"; Eof ]);
+  assert (Lexer.lex {|"say *"hi*""|} = [ Str "say \"hi\""; Eof ]);
+  assert (Lexer.lex {|"*n*t***"";42|} = [ Str "\n\t*\""; Semi; Int 42; Eof ])
 
 let expect_failure source expected_message =
   match Lexer.lex source with
@@ -113,6 +118,9 @@ let test_errors () =
   expect_failure "/* unfinished*" "Unterminated comment";
   expect_failure "\"" "Unterminated string";
   expect_failure "\"unfinished" "Unterminated string";
+  expect_failure {|"unfinished*|} "Unterminated string escape";
+  expect_failure {|"*q"|} "Unknown string escape: *q";
+  expect_failure {|"escaped*"|} "Unterminated string";
   let too_large = string_of_int max_int ^ "0" in
   expect_failure ("  " ^ too_large)
     ("Integer out of range at position 2: " ^ too_large);
