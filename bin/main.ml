@@ -51,7 +51,23 @@ let string_of_token = function
   | Token.Eof -> "Eof"
 
 let () =
-  let source = {|"hello*nworld";|} in
-  let tokens = Bocaml.Lexer.lex source in
+  if Array.length Sys.argv <> 2 then (
+    Printf.eprintf "Usage: %s <file.b>\n" Sys.argv.(0);
+    exit 1);
 
-  List.iter (fun token -> print_endline (string_of_token token)) tokens
+  let filename = Sys.argv.(1) in
+
+  try
+    let source = In_channel.with_open_bin filename In_channel.input_all in
+    let tokens = Bocaml.Lexer.lex source in
+    List.iter (fun token -> print_endline (string_of_token token)) tokens
+  with
+  | Sys_error message ->
+      Printf.eprintf "File error: %s\n" message;
+      exit 1
+  | Bocaml.Lexer.Lexer_error c ->
+      Printf.eprintf "Unexpected character: %C\n" c;
+      exit 1
+  | Failure message ->
+      Printf.eprintf "Lexer error: %s\n" message;
+      exit 1
