@@ -1,0 +1,64 @@
+  name: CI
+
+  on:
+    push:
+      branches: [main]
+    pull_request:
+      branches: [main]
+    workflow_dispatch:
+
+  permissions:
+    contents: read
+
+  concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+  jobs:
+    build:
+      name: Build
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v6
+
+        - uses: ocaml/setup-ocaml@v3
+          with:
+            ocaml-compiler: "5.5.1"
+
+        - name: Install Dune
+          run: opam install dune.3.24.2 --yes
+
+        - name: Build
+          run: opam exec -- dune build @all
+
+    test:
+      name: Tests
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v6
+
+        - uses: ocaml/setup-ocaml@v3
+          with:
+            ocaml-compiler: "5.5.1"
+
+        - name: Install Dune
+          run: opam install dune.3.24.2 --yes
+
+        - name: Run tests
+          run: opam exec -- dune runtest
+
+    format:
+      name: Formatting
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v6
+
+        - uses: ocaml/setup-ocaml@v3
+          with:
+            ocaml-compiler: "5.5.1"
+
+        - name: Install ocamlformat
+          run: opam install ocamlformat.0.29.0 --yes
+
+        - name: Check formatting
+          run: opam exec -- ocamlformat --check lib/*.ml bin/*.ml test/*.ml
