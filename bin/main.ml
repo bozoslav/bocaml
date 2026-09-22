@@ -1,6 +1,6 @@
 module Token = Bocaml.Token
 
-let string_of_token = function
+(*let string_of_token = function
   | Token.Int n -> "Int " ^ string_of_int n
   | Token.Str s -> Printf.sprintf "Str %S" s
   | Token.Name s -> "Name " ^ s
@@ -49,8 +49,24 @@ let string_of_token = function
   | Token.Colon -> "Colon"
   | Token.Question -> "Question"
   | Token.Eof -> "Eof"
+*)
+
+module Ast = Bocaml.Ast
+
+let string_of_binop = function
+  | Ast.Add -> "+"
+  | Ast.Sub -> "-"
+  | Ast.Mul -> "*"
+  | Ast.Div -> "/"
+
+let rec string_of_expr = function
+  | Ast.Int n -> Printf.sprintf "Int(%d)" n
+  
+  | Ast.Binop (op, left, right) ->
+    Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op) (string_of_expr left) (string_of_expr right)
 
 let () =
+  (*
   if Array.length Sys.argv <> 2 then (
     Printf.eprintf "Usage: %s <file.b>\n" Sys.argv.(0);
     exit 1);
@@ -71,3 +87,12 @@ let () =
   | Failure message ->
       Printf.eprintf "Lexer error: %s\n" message;
       exit 1
+  *)
+
+  let source = "10 - 2 - 3" in
+
+  let tokens = Bocaml.Lexer.lex source in
+  let expression = Bocaml.Parser.parse tokens in
+
+  Printf.printf "Source: %s\n" source;
+  Printf.printf "Ast: %s\n" (string_of_expr expression)
