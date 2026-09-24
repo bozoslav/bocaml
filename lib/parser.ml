@@ -1,6 +1,46 @@
 exception Parser_error of string
 
-let rec parse_expr tokens = parse_additive tokens
+let rec parse_expr tokens = parse_relational tokens
+
+and parse_relational tokens =
+  let left, rest = parse_shift tokens in
+  parse_relational_rest left rest
+
+and parse_relational_rest left tokens =
+  match tokens with
+  | Token.Lt :: rest ->
+      let right, rest = parse_shift rest in
+      let expr = Ast.Binop (Ast.Lt, left, right) in
+      parse_relational_rest expr rest
+  | Token.Gt :: rest ->
+      let right, rest = parse_shift rest in
+      let expr = Ast.Binop (Ast.Gt, left, right) in
+      parse_relational_rest expr rest
+  | Token.LtEq :: rest ->
+      let right, rest = parse_shift rest in
+      let expr = Ast.Binop (Ast.LtEq, left, right) in
+      parse_relational_rest expr rest
+  | Token.GtEq :: rest ->
+      let right, rest = parse_shift rest in
+      let expr = Ast.Binop (Ast.GtEq, left, right) in
+      parse_relational_rest expr rest
+  | _ -> (left, tokens)
+
+and parse_shift tokens =
+  let left, rest = parse_additive tokens in
+  parse_shift_rest left rest
+
+and parse_shift_rest left tokens =
+  match tokens with
+  | Token.LtLt :: rest ->
+      let right, rest = parse_additive rest in
+      let expr = Ast.Binop (Ast.ShiftLeft, left, right) in
+      parse_shift_rest expr rest
+  | Token.GtGt :: rest ->
+      let right, rest = parse_additive rest in
+      let expr = Ast.Binop (Ast.ShiftRight, left, right) in
+      parse_shift_rest expr rest
+  | _ -> (left, tokens)
 
 and parse_additive tokens =
   let left, rest = parse_multiplicative tokens in

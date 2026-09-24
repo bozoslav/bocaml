@@ -5,6 +5,12 @@ let string_of_binop = function
   | Ast.Sub -> "-"
   | Ast.Mul -> "*"
   | Ast.Div -> "/"
+  | Ast.ShiftLeft -> "<<"
+  | Ast.ShiftRight -> ">>"
+  | Ast.Lt -> "<"
+  | Ast.Gt -> ">"
+  | Ast.LtEq -> "<="
+  | Ast.GtEq -> ">="
 
 let rec string_of_expr = function
   | Ast.Int n -> Printf.sprintf "Int(%d)" n
