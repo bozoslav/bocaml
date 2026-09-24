@@ -64,17 +64,26 @@ let string_of_token = function
   | Bocaml.Token.Eof -> "Eof"
 
 let () =
-  let mode, filename =
+  let mode, input =
     match Sys.argv with
-    | [| _; filename |] -> (`Parse, filename)
-    | [| _; "--tokens"; filename |] -> (`Tokens, filename)
+    | [| _; "--expr"; source |] -> (`Parse, `Source source)
+    | [| _; "--tokens"; filename |] -> (`Tokens, `File filename)
+    | [| _; argument |] ->
+        if Sys.file_exists argument then (`Parse, `File argument)
+        else (`Parse, `Source argument)
     | _ ->
-        Printf.eprintf "Usage: %s [--tokens] <source-file>\n" Sys.argv.(0);
+        Printf.eprintf
+          "Usage: %s <source-file> | --expr <source> | --tokens <source-file>\n"
+          Sys.argv.(0);
         exit 1
   in
 
   try
-    let source = In_channel.with_open_bin filename In_channel.input_all in
+    let source =
+      match input with
+      | `Source source -> source
+      | `File filename -> In_channel.with_open_bin filename In_channel.input_all
+    in
     let tokens = Bocaml.Lexer.lex source in
     match mode with
     | `Tokens ->
