@@ -18,6 +18,11 @@ let test_operators_are_left_associative () =
     parse "10 - 2 - 3"
     = Ast.Binop (Ast.Sub, Ast.Binop (Ast.Sub, Ast.Int 10, Ast.Int 2), Ast.Int 3))
 
+let test_unary_minus () =
+  assert (parse "-42" = Ast.Neg (Ast.Int 42));
+  assert (parse "-2 * 3" = Ast.Binop (Ast.Mul, Ast.Neg (Ast.Int 2), Ast.Int 3));
+  assert (parse "-(2 + 3)" = Ast.Neg (Ast.Binop (Ast.Add, Ast.Int 2, Ast.Int 3)))
+
 let expect_parser_error source =
   match parse source with
   | _ -> assert false
@@ -34,5 +39,6 @@ let () =
   test_multiplication_precedence ();
   test_parentheses_override_precedence ();
   test_operators_are_left_associative ();
+  test_unary_minus ();
   test_invalid_expressions ();
   print_endline "Parser tests passed"

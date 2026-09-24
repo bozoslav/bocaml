@@ -19,20 +19,27 @@ and parse_additive_rest left tokens =
   | _ -> (left, tokens)
 
 and parse_multiplicative tokens =
-  let left, rest = parse_primary tokens in
+  let left, rest = parse_unary tokens in
   parse_multiplicative_rest left rest
 
 and parse_multiplicative_rest left tokens =
   match tokens with
   | Token.Star :: rest ->
-      let right, rest = parse_primary rest in
+      let right, rest = parse_unary rest in
       let expr = Ast.Binop (Ast.Mul, left, right) in
       parse_multiplicative_rest expr rest
   | Token.Slash :: rest ->
-      let right, rest = parse_primary rest in
+      let right, rest = parse_unary rest in
       let expr = Ast.Binop (Ast.Div, left, right) in
       parse_multiplicative_rest expr rest
   | _ -> (left, tokens)
+
+and parse_unary tokens =
+  match tokens with
+  | Token.Minus :: rest ->
+      let expr, rest = parse_unary rest in
+      (Ast.Neg expr, rest)
+  | _ -> parse_primary tokens
 
 and parse_primary tokens =
   match tokens with

@@ -1,2 +1,2 @@
 type binop = Add | Sub | Mul | Div
-type expr = Int of int | Binop of binop * expr * expr
+type expr = Int of int | Binop of binop * expr * expr | Neg of expr
