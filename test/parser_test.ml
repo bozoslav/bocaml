@@ -8,8 +8,59 @@ let test_multiplication_precedence () =
     parse "2 + 3 * 4"
     = Ast.Binop (Ast.Add, Ast.Int 2, Ast.Binop (Ast.Mul, Ast.Int 3, Ast.Int 4)))
 
+let test_modulo_is_multiplicative () =
+  assert (parse "17 % 5" = Ast.Binop (Ast.Mod, Ast.Int 17, Ast.Int 5));
+  assert (
+    parse "10 + 17 % 5 * 2"
+    = Ast.Binop
+        ( Ast.Add,
+          Ast.Int 10,
+          Ast.Binop
+            (Ast.Mul, Ast.Binop (Ast.Mod, Ast.Int 17, Ast.Int 5), Ast.Int 2) ));
+  assert (
+    parse "20 % 6 % 4"
+    = Ast.Binop (Ast.Mod, Ast.Binop (Ast.Mod, Ast.Int 20, Ast.Int 6), Ast.Int 4))
+
 let test_less_than () =
   assert (parse "1 < 2" = Ast.Binop (Ast.Lt, Ast.Int 1, Ast.Int 2))
+
+let test_equality_operators () =
+  assert (parse "1 == 2" = Ast.Binop (Ast.Equal, Ast.Int 1, Ast.Int 2));
+  assert (parse "1 != 2" = Ast.Binop (Ast.NotEqual, Ast.Int 1, Ast.Int 2))
+
+let test_equality_binds_less_tightly_than_relational () =
+  assert (
+    parse "1 < 2 == 3 >= 4"
+    = Ast.Binop
+        ( Ast.Equal,
+          Ast.Binop (Ast.Lt, Ast.Int 1, Ast.Int 2),
+          Ast.Binop (Ast.GtEq, Ast.Int 3, Ast.Int 4) ))
+
+let test_equality_is_left_associative () =
+  assert (
+    parse "1 == 2 != 3"
+    = Ast.Binop
+        (Ast.NotEqual, Ast.Binop (Ast.Equal, Ast.Int 1, Ast.Int 2), Ast.Int 3))
+
+let test_bitwise_operators () =
+  assert (parse "1 & 2" = Ast.Binop (Ast.BitAnd, Ast.Int 1, Ast.Int 2));
+  assert (parse "1 | 2" = Ast.Binop (Ast.BitOr, Ast.Int 1, Ast.Int 2))
+
+let test_bitwise_precedence () =
+  assert (
+    parse "1 == 2 & 3"
+    = Ast.Binop
+        (Ast.BitAnd, Ast.Binop (Ast.Equal, Ast.Int 1, Ast.Int 2), Ast.Int 3));
+  assert (
+    parse "1 | 2 & 3"
+    = Ast.Binop
+        (Ast.BitOr, Ast.Int 1, Ast.Binop (Ast.BitAnd, Ast.Int 2, Ast.Int 3)))
+
+let test_bitwise_operators_are_left_associative () =
+  assert (
+    parse "1 | 2 | 3"
+    = Ast.Binop
+        (Ast.BitOr, Ast.Binop (Ast.BitOr, Ast.Int 1, Ast.Int 2), Ast.Int 3))
 
 let test_addition_binds_tighter_than_less_than () =
   assert (
@@ -73,7 +124,14 @@ let test_invalid_expressions () =
 let () =
   test_integer_expression ();
   test_multiplication_precedence ();
+  test_modulo_is_multiplicative ();
   test_less_than ();
+  test_equality_operators ();
+  test_equality_binds_less_tightly_than_relational ();
+  test_equality_is_left_associative ();
+  test_bitwise_operators ();
+  test_bitwise_precedence ();
+  test_bitwise_operators_are_left_associative ();
   test_addition_binds_tighter_than_less_than ();
   test_shift_operators ();
   test_addition_binds_tighter_than_shift ();

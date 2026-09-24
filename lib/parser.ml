@@ -1,6 +1,46 @@
 exception Parser_error of string
 
-let rec parse_expr tokens = parse_relational tokens
+let rec parse_expr tokens = parse_bitwise_or tokens
+
+and parse_bitwise_or tokens =
+  let left, rest = parse_bitwise_and tokens in
+  parse_bitwise_or_rest left rest
+
+and parse_bitwise_or_rest left tokens =
+  match tokens with
+  | Token.Pipe :: rest ->
+      let right, rest = parse_bitwise_and rest in
+      let expr = Ast.Binop (Ast.BitOr, left, right) in
+      parse_bitwise_or_rest expr rest
+  | _ -> (left, tokens)
+
+and parse_bitwise_and tokens =
+  let left, rest = parse_equality tokens in
+  parse_bitwise_and_rest left rest
+
+and parse_bitwise_and_rest left tokens =
+  match tokens with
+  | Token.Amp :: rest ->
+      let right, rest = parse_equality rest in
+      let expr = Ast.Binop (Ast.BitAnd, left, right) in
+      parse_bitwise_and_rest expr rest
+  | _ -> (left, tokens)
+
+and parse_equality tokens =
+  let left, rest = parse_relational tokens in
+  parse_equality_rest left rest
+
+and parse_equality_rest left tokens =
+  match tokens with
+  | Token.EqEq :: rest ->
+      let right, rest = parse_relational rest in
+      let expr = Ast.Binop (Ast.Equal, left, right) in
+      parse_equality_rest expr rest
+  | Token.BangEq :: rest ->
+      let right, rest = parse_relational rest in
+      let expr = Ast.Binop (Ast.NotEqual, left, right) in
+      parse_equality_rest expr rest
+  | _ -> (left, tokens)
 
 and parse_relational tokens =
   let left, rest = parse_shift tokens in
@@ -71,6 +111,10 @@ and parse_multiplicative_rest left tokens =
   | Token.Slash :: rest ->
       let right, rest = parse_unary rest in
       let expr = Ast.Binop (Ast.Div, left, right) in
+      parse_multiplicative_rest expr rest
+  | Token.Percent :: rest ->
+      let right, rest = parse_unary rest in
+      let expr = Ast.Binop (Ast.Mod, left, right) in
       parse_multiplicative_rest expr rest
   | _ -> (left, tokens)
 

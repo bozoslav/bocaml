@@ -9,5 +9,10 @@ type binop =
   | Gt
   | LtEq
   | GtEq
+  | Equal
+  | NotEqual
+  | BitAnd
+  | BitOr
+  | Mod
 
 type expr = Int of int | Binop of binop * expr * expr | Neg of expr
