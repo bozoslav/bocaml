@@ -1,3 +1,7 @@
 (test
  (name lexer_test)
  (libraries bocaml))
+
+(test
+ (name parser_test)
+ (libraries bocaml))

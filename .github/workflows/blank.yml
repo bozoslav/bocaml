@@ -44,7 +44,7 @@
         - name: Install Dune
           run: opam install dune.3.24.2 --yes
 
-        - name: Run tests
+        - name: Run lexer and parser tests
           run: opam exec -- dune runtest
 
     format:
