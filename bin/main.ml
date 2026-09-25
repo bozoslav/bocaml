@@ -31,7 +31,8 @@ let rec string_of_expr = function
 
 and string_of_lvalue = function
   | Ast.Variable name -> Printf.sprintf "Variable(%S)" name
-  | Ast.Dereference expr -> Printf.sprintf "Dereference(%s)" (string_of_expr expr)
+  | Ast.Dereference expr ->
+      Printf.sprintf "Dereference(%s)" (string_of_expr expr)
   | Ast.Subscript (array, index) ->
       Printf.sprintf "Subscript(%s, %s)" (string_of_expr array)
         (string_of_expr index)

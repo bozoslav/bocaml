@@ -136,6 +136,9 @@ and parse_unary tokens =
   | Token.Minus :: rest ->
       let expr, rest = parse_unary rest in
       (Ast.Neg expr, rest)
+  | Token.Star :: rest ->
+      let expr, rest = parse_unary rest in
+      (Ast.Read (Ast.Dereference expr), rest)
   | _ -> parse_primary tokens
 
 and parse_primary tokens =
