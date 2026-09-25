@@ -21,6 +21,7 @@ type expr =
   | Binop of binop * expr * expr
   | Neg of expr
   | Conditional of expr * expr * expr
+  | Address of lvalue
 
 and lvalue =
   | Variable of string

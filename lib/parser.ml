@@ -139,6 +139,12 @@ and parse_unary tokens =
   | Token.Star :: rest ->
       let expr, rest = parse_unary rest in
       (Ast.Read (Ast.Dereference expr), rest)
+  | Token.Amp :: rest ->
+      let expr, rest = parse_unary rest in
+      begin match expr with
+      | Ast.Read lvalue -> (Ast.Address lvalue, rest)
+      | _ -> raise (Parser_error "Expected an lvalue after '&'")
+      end
   | _ -> parse_primary tokens
 
 and parse_primary tokens =

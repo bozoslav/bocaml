@@ -20,6 +20,7 @@ let string_of_binop = function
 let rec string_of_expr = function
   | Ast.Int n -> Printf.sprintf "Int(%d)" n
   | Ast.Read lvalue -> Printf.sprintf "Read(%s)" (string_of_lvalue lvalue)
+  | Ast.Address lvalue -> Printf.sprintf "Address(%s)" (string_of_lvalue lvalue)
   | Ast.Binop (op, left, right) ->
       Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op)
         (string_of_expr left) (string_of_expr right)

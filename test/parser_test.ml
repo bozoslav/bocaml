@@ -13,10 +13,29 @@ let test_dereference_expression () =
   assert (
     parse "*ptr" = Ast.Read (Ast.Dereference (Ast.Read (Ast.Variable "ptr"))))
 
+let test_address_of_expression () =
+  assert (parse "&count" = Ast.Address (Ast.Variable "count"));
+  assert (
+    parse "&*ptr"
+    = Ast.Address (Ast.Dereference (Ast.Read (Ast.Variable "ptr"))))
+
 let test_array_subscript () =
   assert (
     parse "items[2]"
-    = Ast.Read (Ast.Subscript (Ast.Read (Ast.Variable "items"), Ast.Int 2)))
+    = Ast.Read (Ast.Subscript (Ast.Read (Ast.Variable "items"), Ast.Int 2)));
+  assert (
+    parse "items[i + 1]"
+    = Ast.Read
+        (Ast.Subscript
+           ( Ast.Read (Ast.Variable "items"),
+             Ast.Binop (Ast.Add, Ast.Read (Ast.Variable "i"), Ast.Int 1) )));
+  assert (
+    parse "items[2][3]"
+    = Ast.Read
+        (Ast.Subscript
+           ( Ast.Read
+               (Ast.Subscript (Ast.Read (Ast.Variable "items"), Ast.Int 2)),
+             Ast.Int 3 )))
 
 let test_multiplication_precedence () =
   assert (
@@ -157,12 +176,16 @@ let test_invalid_expressions () =
   expect_parser_error "2 3";
   expect_parser_error "(2 + 3";
   expect_parser_error "1 ? 2";
-  expect_parser_error "1 ? 2 :"
+  expect_parser_error "1 ? 2 :";
+  expect_parser_error "items[2";
+  expect_parser_error "items[]";
+  expect_parser_error "&1"
 
 let () =
   test_integer_expression ();
   test_variable_expression ();
   test_dereference_expression ();
+  test_address_of_expression ();
   test_array_subscript ();
   test_multiplication_precedence ();
   test_modulo_is_multiplicative ();
