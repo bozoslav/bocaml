@@ -62,6 +62,27 @@ let test_bitwise_operators_are_left_associative () =
     = Ast.Binop
         (Ast.BitOr, Ast.Binop (Ast.BitOr, Ast.Int 1, Ast.Int 2), Ast.Int 3))
 
+let test_conditional_expression () =
+  assert (parse "1 ? 2 : 3" = Ast.Conditional (Ast.Int 1, Ast.Int 2, Ast.Int 3))
+
+let test_conditional_binds_less_tightly_than_bitwise_or () =
+  assert (
+    parse "1 | 2 ? 3 + 4 : 5"
+    = Ast.Conditional
+        ( Ast.Binop (Ast.BitOr, Ast.Int 1, Ast.Int 2),
+          Ast.Binop (Ast.Add, Ast.Int 3, Ast.Int 4),
+          Ast.Int 5 ))
+
+let test_conditional_is_right_associative () =
+  assert (
+    parse "1 ? 2 : 3 ? 4 : 5"
+    = Ast.Conditional
+        (Ast.Int 1, Ast.Int 2, Ast.Conditional (Ast.Int 3, Ast.Int 4, Ast.Int 5)));
+  assert (
+    parse "1 ? 2 ? 3 : 4 : 5"
+    = Ast.Conditional
+        (Ast.Int 1, Ast.Conditional (Ast.Int 2, Ast.Int 3, Ast.Int 4), Ast.Int 5))
+
 let test_addition_binds_tighter_than_less_than () =
   assert (
     parse "1 + 2 < 4"
@@ -119,7 +140,9 @@ let test_invalid_expressions () =
   expect_parser_error "";
   expect_parser_error "2 +";
   expect_parser_error "2 3";
-  expect_parser_error "(2 + 3"
+  expect_parser_error "(2 + 3";
+  expect_parser_error "1 ? 2";
+  expect_parser_error "1 ? 2 :"
 
 let () =
   test_integer_expression ();
@@ -132,6 +155,9 @@ let () =
   test_bitwise_operators ();
   test_bitwise_precedence ();
   test_bitwise_operators_are_left_associative ();
+  test_conditional_expression ();
+  test_conditional_binds_less_tightly_than_bitwise_or ();
+  test_conditional_is_right_associative ();
   test_addition_binds_tighter_than_less_than ();
   test_shift_operators ();
   test_addition_binds_tighter_than_shift ();

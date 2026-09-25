@@ -15,4 +15,8 @@ type binop =
   | BitOr
   | Mod
 
-type expr = Int of int | Binop of binop * expr * expr | Neg of expr
+type expr =
+  | Int of int
+  | Binop of binop * expr * expr
+  | Neg of expr
+  | Conditional of expr * expr * expr

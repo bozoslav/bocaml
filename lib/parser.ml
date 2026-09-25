@@ -1,6 +1,19 @@
 exception Parser_error of string
 
-let rec parse_expr tokens = parse_bitwise_or tokens
+let rec parse_expr tokens = parse_conditional tokens
+
+and parse_conditional tokens =
+  let condition, rest = parse_bitwise_or tokens in
+  match rest with
+  | Token.Question :: rest ->
+      let when_true, rest = parse_expr rest in
+      begin match rest with
+      | Token.Colon :: rest ->
+          let when_false, rest = parse_conditional rest in
+          (Ast.Conditional (condition, when_true, when_false), rest)
+      | _ -> raise (Parser_error "Expected ':' in conditional expression")
+      end
+  | _ -> (condition, rest)
 
 and parse_bitwise_or tokens =
   let left, rest = parse_bitwise_and tokens in

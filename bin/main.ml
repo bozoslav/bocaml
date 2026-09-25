@@ -23,6 +23,10 @@ let rec string_of_expr = function
       Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op)
         (string_of_expr left) (string_of_expr right)
   | Ast.Neg expr -> Printf.sprintf "Neg(%s)" (string_of_expr expr)
+  | Ast.Conditional (condition, when_true, when_false) ->
+      Printf.sprintf "Conditional(%s, %s, %s)" (string_of_expr condition)
+        (string_of_expr when_true)
+        (string_of_expr when_false)
 
 let string_of_token = function
   | Bocaml.Token.Int n -> "Int " ^ string_of_int n
