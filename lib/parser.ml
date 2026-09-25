@@ -141,6 +141,7 @@ and parse_unary tokens =
 and parse_primary tokens =
   match tokens with
   | Token.Int n :: rest -> (Ast.Int n, rest)
+  | Token.Name name :: rest -> (Ast.Read (Ast.Variable name), rest)
   | Token.LParen :: rest ->
       let expr, rest = parse_expr rest in
       begin match rest with

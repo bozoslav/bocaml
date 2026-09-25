@@ -1,4 +1,3 @@
-(* lib/token.ml *)
 type t =
   | Int of int
   | Str of string

@@ -17,6 +17,12 @@ type binop =
 
 type expr =
   | Int of int
+  | Read of lvalue
   | Binop of binop * expr * expr
   | Neg of expr
   | Conditional of expr * expr * expr
+
+and lvalue =
+  | Variable of string
+  | Dereference of expr
+  | Subscript of expr * expr

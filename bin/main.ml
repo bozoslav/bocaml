@@ -19,6 +19,7 @@ let string_of_binop = function
 
 let rec string_of_expr = function
   | Ast.Int n -> Printf.sprintf "Int(%d)" n
+  | Ast.Read lvalue -> Printf.sprintf "Read(%s)" (string_of_lvalue lvalue)
   | Ast.Binop (op, left, right) ->
       Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op)
         (string_of_expr left) (string_of_expr right)
@@ -27,6 +28,13 @@ let rec string_of_expr = function
       Printf.sprintf "Conditional(%s, %s, %s)" (string_of_expr condition)
         (string_of_expr when_true)
         (string_of_expr when_false)
+
+and string_of_lvalue = function
+  | Ast.Variable name -> Printf.sprintf "Variable(%S)" name
+  | Ast.Dereference expr -> Printf.sprintf "Dereference(%s)" (string_of_expr expr)
+  | Ast.Subscript (array, index) ->
+      Printf.sprintf "Subscript(%s, %s)" (string_of_expr array)
+        (string_of_expr index)
 
 let string_of_token = function
   | Bocaml.Token.Int n -> "Int " ^ string_of_int n

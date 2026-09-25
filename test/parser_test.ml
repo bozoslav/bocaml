@@ -3,6 +3,12 @@ open Bocaml
 let parse source = source |> Lexer.lex |> Parser.parse
 let test_integer_expression () = assert (parse "42" = Ast.Int 42)
 
+let test_variable_expression () =
+  assert (parse "count" = Ast.Read (Ast.Variable "count"));
+  assert (
+    parse "count + 1"
+    = Ast.Binop (Ast.Add, Ast.Read (Ast.Variable "count"), Ast.Int 1))
+
 let test_multiplication_precedence () =
   assert (
     parse "2 + 3 * 4"
@@ -146,6 +152,7 @@ let test_invalid_expressions () =
 
 let () =
   test_integer_expression ();
+  test_variable_expression ();
   test_multiplication_precedence ();
   test_modulo_is_multiplicative ();
   test_less_than ();
