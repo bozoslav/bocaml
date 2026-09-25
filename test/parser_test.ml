@@ -11,8 +11,12 @@ let test_variable_expression () =
 
 let test_dereference_expression () =
   assert (
-    parse "*ptr"
-    = Ast.Read (Ast.Dereference (Ast.Read (Ast.Variable "ptr"))))
+    parse "*ptr" = Ast.Read (Ast.Dereference (Ast.Read (Ast.Variable "ptr"))))
+
+let test_array_subscript () =
+  assert (
+    parse "items[2]"
+    = Ast.Read (Ast.Subscript (Ast.Read (Ast.Variable "items"), Ast.Int 2)))
 
 let test_multiplication_precedence () =
   assert (
@@ -159,6 +163,7 @@ let () =
   test_integer_expression ();
   test_variable_expression ();
   test_dereference_expression ();
+  test_array_subscript ();
   test_multiplication_precedence ();
   test_modulo_is_multiplicative ();
   test_less_than ();

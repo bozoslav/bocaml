@@ -142,16 +142,31 @@ and parse_unary tokens =
   | _ -> parse_primary tokens
 
 and parse_primary tokens =
+  let base, rest =
+    match tokens with
+    | Token.Int n :: rest -> (Ast.Int n, rest)
+    | Token.Name name :: rest -> (Ast.Read (Ast.Variable name), rest)
+    | Token.LParen :: rest ->
+        let expr, rest = parse_expr rest in
+        begin match rest with
+        | Token.RParen :: rest -> (expr, rest)
+        | _ -> raise (Parser_error "Expected ')")
+        end
+    | _ -> raise (Parser_error "Expected expression")
+  in
+  parse_postfix base rest
+
+and parse_postfix base tokens =
   match tokens with
-  | Token.Int n :: rest -> (Ast.Int n, rest)
-  | Token.Name name :: rest -> (Ast.Read (Ast.Variable name), rest)
-  | Token.LParen :: rest ->
-      let expr, rest = parse_expr rest in
+  | Token.LBracket :: rest ->
+      let index, rest = parse_expr rest in
       begin match rest with
-      | Token.RParen :: rest -> (expr, rest)
-      | _ -> raise (Parser_error "Expected ')")
+      | Token.RBracket :: rest ->
+          let subscript = Ast.Read (Ast.Subscript (base, index)) in
+          parse_postfix subscript rest
+      | _ -> raise (Parser_error "expected ']' after subscript")
       end
-  | _ -> raise (Parser_error "Expected expression")
+  | _ -> (base, tokens)
 
 let parse tokens =
   let expr, rest = parse_expr tokens in
