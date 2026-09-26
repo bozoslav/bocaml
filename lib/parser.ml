@@ -184,7 +184,25 @@ and parse_postfix base tokens =
           parse_postfix subscript rest
       | _ -> raise (Parser_error "expected ']' after subscript")
       end
+  | Token.LParen :: rest ->
+      let arguments, rest = parse_arguments rest in
+      parse_postfix (Ast.Call (base, arguments)) rest
   | _ -> (base, tokens)
+
+and parse_arguments tokens =
+  match tokens with
+  | Token.RParen :: rest -> ([], rest)
+  | _ ->
+      let first, rest = parse_expr tokens in
+      parse_arguments_rest [ first ] rest
+
+and parse_arguments_rest reversed_arguments tokens =
+  match tokens with
+  | Token.Comma :: rest ->
+      let argument, rest = parse_expr rest in
+      parse_arguments_rest (argument :: reversed_arguments) rest
+  | Token.RParen :: rest -> (List.rev reversed_arguments, rest)
+  | _ -> raise (Parser_error "Expected ',' or ')' in function arguments")
 
 let parse tokens =
   let expr, rest = parse_expr tokens in

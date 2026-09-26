@@ -24,6 +24,9 @@ let rec string_of_expr = function
   | Ast.Assign (lvalue, expr) ->
       Printf.sprintf "Assign(%s, %s)" (string_of_lvalue lvalue)
         (string_of_expr expr)
+  | Ast.Call (callee, arguments) ->
+      Printf.sprintf "Call(%s, [%s])" (string_of_expr callee)
+        (String.concat ", " (List.map string_of_expr arguments))
   | Ast.Binop (op, left, right) ->
       Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op)
         (string_of_expr left) (string_of_expr right)

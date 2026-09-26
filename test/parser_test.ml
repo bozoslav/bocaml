@@ -50,6 +50,23 @@ let test_assignment_expression () =
             (Ast.Read (Ast.Variable "items"), Ast.Read (Ast.Variable "i")),
           Ast.Binop (Ast.Add, Ast.Read (Ast.Variable "count"), Ast.Int 1) ))
 
+let test_function_call_expression () =
+  assert (parse "foo()" = Ast.Call (Ast.Read (Ast.Variable "foo"), []));
+  assert (
+    parse "foo(count, 2 + 3)"
+    = Ast.Call
+        ( Ast.Read (Ast.Variable "foo"),
+          [
+            Ast.Read (Ast.Variable "count");
+            Ast.Binop (Ast.Add, Ast.Int 2, Ast.Int 3);
+          ] ));
+  assert (
+    parse "foo(1)[i]"
+    = Ast.Read
+        (Ast.Subscript
+           ( Ast.Call (Ast.Read (Ast.Variable "foo"), [ Ast.Int 1 ]),
+             Ast.Read (Ast.Variable "i") )))
+
 let test_multiplication_precedence () =
   assert (
     parse "2 + 3 * 4"
@@ -193,7 +210,9 @@ let test_invalid_expressions () =
   expect_parser_error "items[2";
   expect_parser_error "items[]";
   expect_parser_error "&1";
-  expect_parser_error "1 = count"
+  expect_parser_error "1 = count";
+  expect_parser_error "foo(1";
+  expect_parser_error "foo(1,)"
 
 let () =
   test_integer_expression ();
@@ -202,6 +221,7 @@ let () =
   test_address_of_expression ();
   test_array_subscript ();
   test_assignment_expression ();
+  test_function_call_expression ();
   test_multiplication_precedence ();
   test_modulo_is_multiplicative ();
   test_less_than ();

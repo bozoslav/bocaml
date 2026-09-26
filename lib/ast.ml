@@ -23,6 +23,7 @@ type expr =
   | Conditional of expr * expr * expr
   | Address of lvalue
   | Assign of lvalue * expr
+  | Call of expr * expr list
 
 and lvalue =
   | Variable of string
