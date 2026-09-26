@@ -1,6 +1,7 @@
 open Bocaml
 
 let parse source = source |> Lexer.lex |> Parser.parse
+let parse_statement source = source |> Lexer.lex |> Parser.parse_statement
 let test_integer_expression () = assert (parse "42" = Ast.Int 42)
 
 let test_variable_expression () =
@@ -238,6 +239,34 @@ let test_invalid_expressions () =
   expect_parser_error "1++";
   expect_parser_error "foo()--"
 
+let test_expression_statements () =
+  assert (
+    parse_statement "count = 7;"
+    = Ast.Expression (Ast.Assign (Ast.Variable "count", Ast.Int 7)));
+  assert (
+    parse_statement "print(count);"
+    = Ast.Expression
+        (Ast.Call
+           (Ast.Read (Ast.Variable "print"), [ Ast.Read (Ast.Variable "count") ])))
+
+let test_return_statements () =
+  assert (parse_statement "return;" = Ast.Return None);
+  assert (
+    parse_statement "return (count + 1);"
+    = Ast.Return
+        (Some (Ast.Binop (Ast.Add, Ast.Read (Ast.Variable "count"), Ast.Int 1))))
+
+let expect_statement_parser_error source =
+  match parse_statement source with
+  | _ -> assert false
+  | exception Parser.Parser_error _ -> ()
+
+let test_invalid_statements () =
+  expect_statement_parser_error "count = 7";
+  expect_statement_parser_error "return";
+  expect_statement_parser_error "return count;";
+  expect_statement_parser_error "return (count); extra;"
+
 let () =
   test_integer_expression ();
   test_variable_expression ();
@@ -269,4 +298,7 @@ let () =
   test_operators_are_left_associative ();
   test_unary_minus ();
   test_invalid_expressions ();
+  test_expression_statements ();
+  test_return_statements ();
+  test_invalid_statements ();
   print_endline "Parser tests passed"

@@ -34,3 +34,5 @@ and lvalue =
   | Variable of string
   | Dereference of expr
   | Subscript of expr * expr
+
+type stmt = Expression of expr | Return of expr option
