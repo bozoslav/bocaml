@@ -37,6 +37,19 @@ let test_array_subscript () =
                (Ast.Subscript (Ast.Read (Ast.Variable "items"), Ast.Int 2)),
              Ast.Int 3 )))
 
+let test_assignment_expression () =
+  assert (parse "count = 7" = Ast.Assign (Ast.Variable "count", Ast.Int 7));
+  assert (
+    parse "count = other = 7"
+    = Ast.Assign
+        (Ast.Variable "count", Ast.Assign (Ast.Variable "other", Ast.Int 7)));
+  assert (
+    parse "items[i] = count + 1"
+    = Ast.Assign
+        ( Ast.Subscript
+            (Ast.Read (Ast.Variable "items"), Ast.Read (Ast.Variable "i")),
+          Ast.Binop (Ast.Add, Ast.Read (Ast.Variable "count"), Ast.Int 1) ))
+
 let test_multiplication_precedence () =
   assert (
     parse "2 + 3 * 4"
@@ -179,7 +192,8 @@ let test_invalid_expressions () =
   expect_parser_error "1 ? 2 :";
   expect_parser_error "items[2";
   expect_parser_error "items[]";
-  expect_parser_error "&1"
+  expect_parser_error "&1";
+  expect_parser_error "1 = count"
 
 let () =
   test_integer_expression ();
@@ -187,6 +201,7 @@ let () =
   test_dereference_expression ();
   test_address_of_expression ();
   test_array_subscript ();
+  test_assignment_expression ();
   test_multiplication_precedence ();
   test_modulo_is_multiplicative ();
   test_less_than ();

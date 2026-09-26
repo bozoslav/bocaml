@@ -1,6 +1,18 @@
 exception Parser_error of string
 
-let rec parse_expr tokens = parse_conditional tokens
+let rec parse_expr tokens = parse_assignment tokens
+
+and parse_assignment tokens =
+  let left, rest = parse_conditional tokens in
+  match rest with
+  | Token.Eq :: rest ->
+      begin match left with
+      | Ast.Read lvalue ->
+          let right, rest = parse_assignment rest in
+          (Ast.Assign (lvalue, right), rest)
+      | _ -> raise (Parser_error "Expected an lvalue on the left of '='")
+      end
+  | _ -> (left, rest)
 
 and parse_conditional tokens =
   let condition, rest = parse_bitwise_or tokens in

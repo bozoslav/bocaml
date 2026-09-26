@@ -22,6 +22,7 @@ type expr =
   | Neg of expr
   | Conditional of expr * expr * expr
   | Address of lvalue
+  | Assign of lvalue * expr
 
 and lvalue =
   | Variable of string
