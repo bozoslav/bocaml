@@ -67,6 +67,26 @@ let test_function_call_expression () =
            ( Ast.Call (Ast.Read (Ast.Variable "foo"), [ Ast.Int 1 ]),
              Ast.Read (Ast.Variable "i") )))
 
+let test_logical_not () =
+  assert (parse "!0" = Ast.Not (Ast.Int 0));
+  assert (parse "!!count" = Ast.Not (Ast.Not (Ast.Read (Ast.Variable "count"))))
+
+let test_increment_decrement () =
+  assert (parse "++count" = Ast.PreIncrement (Ast.Variable "count"));
+  assert (parse "--count" = Ast.PreDecrement (Ast.Variable "count"));
+  assert (parse "count++" = Ast.PostIncrement (Ast.Variable "count"));
+  assert (parse "count--" = Ast.PostDecrement (Ast.Variable "count"));
+  assert (
+    parse "--items[i]"
+    = Ast.PreDecrement
+        (Ast.Subscript
+           (Ast.Read (Ast.Variable "items"), Ast.Read (Ast.Variable "i"))));
+  assert (
+    parse "items[i]++"
+    = Ast.PostIncrement
+        (Ast.Subscript
+           (Ast.Read (Ast.Variable "items"), Ast.Read (Ast.Variable "i"))))
+
 let test_multiplication_precedence () =
   assert (
     parse "2 + 3 * 4"
@@ -212,7 +232,11 @@ let test_invalid_expressions () =
   expect_parser_error "&1";
   expect_parser_error "1 = count";
   expect_parser_error "foo(1";
-  expect_parser_error "foo(1,)"
+  expect_parser_error "foo(1,)";
+  expect_parser_error "++1";
+  expect_parser_error "--(count + 1)";
+  expect_parser_error "1++";
+  expect_parser_error "foo()--"
 
 let () =
   test_integer_expression ();
@@ -222,6 +246,8 @@ let () =
   test_array_subscript ();
   test_assignment_expression ();
   test_function_call_expression ();
+  test_logical_not ();
+  test_increment_decrement ();
   test_multiplication_precedence ();
   test_modulo_is_multiplicative ();
   test_less_than ();

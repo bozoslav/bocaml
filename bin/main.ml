@@ -27,6 +27,15 @@ let rec string_of_expr = function
   | Ast.Call (callee, arguments) ->
       Printf.sprintf "Call(%s, [%s])" (string_of_expr callee)
         (String.concat ", " (List.map string_of_expr arguments))
+  | Ast.Not expr -> Printf.sprintf "Not(%s)" (string_of_expr expr)
+  | Ast.PreIncrement lvalue ->
+      Printf.sprintf "PreIncrement(%s)" (string_of_lvalue lvalue)
+  | Ast.PreDecrement lvalue ->
+      Printf.sprintf "PreDecrement(%s)" (string_of_lvalue lvalue)
+  | Ast.PostIncrement lvalue ->
+      Printf.sprintf "PostIncrement(%s)" (string_of_lvalue lvalue)
+  | Ast.PostDecrement lvalue ->
+      Printf.sprintf "PostDecrement(%s)" (string_of_lvalue lvalue)
   | Ast.Binop (op, left, right) ->
       Printf.sprintf "Binop(%s, %s, %s)" (string_of_binop op)
         (string_of_expr left) (string_of_expr right)

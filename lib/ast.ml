@@ -24,6 +24,11 @@ type expr =
   | Address of lvalue
   | Assign of lvalue * expr
   | Call of expr * expr list
+  | Not of expr
+  | PreIncrement of lvalue
+  | PreDecrement of lvalue
+  | PostIncrement of lvalue
+  | PostDecrement of lvalue
 
 and lvalue =
   | Variable of string

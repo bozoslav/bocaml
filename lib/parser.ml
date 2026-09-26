@@ -157,6 +157,21 @@ and parse_unary tokens =
       | Ast.Read lvalue -> (Ast.Address lvalue, rest)
       | _ -> raise (Parser_error "Expected an lvalue after '&'")
       end
+  | Token.Bang :: rest ->
+      let expr, rest = parse_unary rest in
+      (Ast.Not expr, rest)
+  | Token.PlusPlus :: rest ->
+      let expr, rest = parse_unary rest in
+      begin match expr with
+      | Ast.Read lvalue -> (Ast.PreIncrement lvalue, rest)
+      | _ -> raise (Parser_error "Expected and lvalue after '++'")
+      end
+  | Token.MinusMinus :: rest ->
+      let expr, rest = parse_unary rest in
+      begin match expr with
+      | Ast.Read lvalue -> (Ast.PreDecrement lvalue, rest)
+      | _ -> raise (Parser_error "Expected an lvalue after '--'")
+      end
   | _ -> parse_primary tokens
 
 and parse_primary tokens =
@@ -187,6 +202,16 @@ and parse_postfix base tokens =
   | Token.LParen :: rest ->
       let arguments, rest = parse_arguments rest in
       parse_postfix (Ast.Call (base, arguments)) rest
+  | Token.PlusPlus :: rest ->
+      begin match base with
+      | Ast.Read lvalue -> parse_postfix (Ast.PostIncrement lvalue) rest
+      | _ -> raise (Parser_error "Expected an lvalue before '++'")
+      end
+  | Token.MinusMinus :: rest ->
+      begin match base with
+      | Ast.Read lvalue -> parse_postfix (Ast.PostDecrement lvalue) rest
+      | _ -> raise (Parser_error "Expected an lvalue before '--")
+      end
   | _ -> (base, tokens)
 
 and parse_arguments tokens =
