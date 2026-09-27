@@ -9,3 +9,7 @@
 (test
  (name codegen_test)
  (libraries bocaml))
+
+(test
+ (name llvm_codegen_test)
+ (libraries bocaml))

@@ -128,6 +128,7 @@ let () =
   let mode, input =
     match Sys.argv with
     | [| _; "--expr"; source |] -> (`Parse, `Source source)
+    | [| _; "--llvm-expr"; source |] -> (`Llvm, `Source source)
     | [| _; "--stmt"; source |] -> (`Statement, `Source source)
     | [| _; "--tokens"; filename |] -> (`Tokens, `File filename)
     | [| _; argument |] ->
@@ -135,8 +136,8 @@ let () =
         else (`Parse, `Source argument)
     | _ ->
         Printf.eprintf
-          "Usage: %s <source-file> | --expr <source> | --stmt <source> | \
-           --tokens <source-file>\n"
+          "Usage: %s <source-file> | --expr <source> | --llvm-expr <source> | \
+           --stmt <source> | --tokens <source-file>\n"
           Sys.argv.(0);
         exit 1
   in
@@ -154,6 +155,9 @@ let () =
     | `Parse ->
         let expression = Bocaml.Parser.parse tokens in
         print_endline (string_of_expr expression)
+    | `Llvm ->
+        let expression = Bocaml.Parser.parse tokens in
+        print_endline (Bocaml.Llvm_codegen.compile_expr expression)
     | `Statement ->
         let statement = Bocaml.Parser.parse_statement tokens in
         print_endline (string_of_statement statement)
