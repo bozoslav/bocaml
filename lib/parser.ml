@@ -231,6 +231,7 @@ and parse_arguments_rest reversed_arguments tokens =
 
 let rec parse_statement_rest tokens =
   match tokens with
+  | Token.Semi :: rest -> (Ast.Null, rest)
   | Token.LBrace :: rest -> parse_block rest []
   | Token.Return :: Token.Semi :: rest -> (Ast.Return None, rest)
   | Token.Return :: Token.LParen :: rest ->

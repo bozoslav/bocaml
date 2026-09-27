@@ -36,6 +36,7 @@ and lvalue =
   | Subscript of expr * expr
 
 type stmt =
+  | Null
   | Expression of expr
   | Return of expr option
   | Block of stmt list

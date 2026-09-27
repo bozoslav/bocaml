@@ -54,6 +54,7 @@ and string_of_lvalue = function
         (string_of_expr index)
 
 let rec string_of_statement = function
+  | Ast.Null -> "Null"
   | Ast.Expression expr -> Printf.sprintf "Expression(%s)" (string_of_expr expr)
   | Ast.Return None -> "Return"
   | Ast.Return (Some expr) -> Printf.sprintf "Return(%s)" (string_of_expr expr)

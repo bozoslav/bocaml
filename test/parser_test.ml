@@ -343,6 +343,14 @@ let test_invalid_if_and_while_statements () =
   expect_statement_parser_error "else x = 2;";
   expect_statement_parser_error "while (count { count--; }"
 
+let test_null_statements () =
+  assert (parse_statement ";" = Ast.Null);
+  assert (
+    parse_statement "while (count);"
+    = Ast.While (Ast.Read (Ast.Variable "count"), Ast.Null));
+  assert (
+    parse_statement "{ ; return; }" = Ast.Block [ Ast.Null; Ast.Return None ])
+
 let () =
   test_integer_expression ();
   test_variable_expression ();
@@ -382,4 +390,5 @@ let () =
   test_if_statements ();
   test_while_statements ();
   test_invalid_if_and_while_statements ();
+  test_null_statements ();
   print_endline "Parser tests passed"
