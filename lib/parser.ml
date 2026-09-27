@@ -285,6 +285,48 @@ let parse_statement tokens =
   | [ Token.Eof ] -> statement
   | _ -> raise (Parser_error "Unexpected tokens after statement")
 
+let rec parse_parameters tokens =
+  match tokens with
+  | Token.RParen :: rest -> ([], rest)
+  | Token.Name name :: rest -> parse_parameters_rest [ name ] rest
+  | _ ->
+      raise
+        (Parser_error "Expected a parameter name or ')' in function definition")
+
+and parse_parameters_rest reversed_parameters tokens =
+  match tokens with
+  | Token.Comma :: Token.Name name :: rest ->
+      parse_parameters_rest (name :: reversed_parameters) rest
+  | Token.Comma :: _ ->
+      raise (Parser_error "Expected a parameter name after ','")
+  | Token.RParen :: rest -> (List.rev reversed_parameters, rest)
+  | _ -> raise (Parser_error "Expected ',' or ')' after function parameter")
+
+let parse_function tokens =
+  match tokens with
+  | Token.Name name :: Token.LParen :: rest ->
+      let params, rest = parse_parameters rest in
+      let body, rest = parse_statement_rest rest in
+      ({ Ast.name; params; body }, rest)
+  | _ -> raise (Parser_error "Expected function definition")
+
+let parse_program tokens =
+  let rec parse_functions reversed_functions tokens =
+    match tokens with
+    | [ Token.Eof ] ->
+        if reversed_functions = [] then
+          raise (Parser_error "Expected at least one function definition")
+        else List.rev reversed_functions
+    | Token.Eof :: _ ->
+        raise (Parser_error "Unexpected tokens after end of program")
+    | [] -> raise (Parser_error "Expected end of program")
+    | _ ->
+        let fn, rest = parse_function tokens in
+        if rest = tokens then raise (Parser_error "Parser made no progress")
+        else parse_functions (fn :: reversed_functions) rest
+  in
+  parse_functions [] tokens
+
 let parse tokens =
   let expr, rest = parse_expr tokens in
 

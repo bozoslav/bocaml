@@ -2,6 +2,7 @@ open Bocaml
 
 let parse source = source |> Lexer.lex |> Parser.parse
 let parse_statement source = source |> Lexer.lex |> Parser.parse_statement
+let parse_program source = source |> Lexer.lex |> Parser.parse_program
 let test_integer_expression () = assert (parse "42" = Ast.Int 42)
 
 let test_variable_expression () =
@@ -351,6 +352,64 @@ let test_null_statements () =
   assert (
     parse_statement "{ ; return; }" = Ast.Block [ Ast.Null; Ast.Return None ])
 
+let test_function_definitions () =
+  assert (
+    parse_program "main() { return (42); }"
+    = [
+        {
+          Ast.name = "main";
+          params = [];
+          body = Ast.Block [ Ast.Return (Some (Ast.Int 42)) ];
+        };
+      ]);
+  assert (
+    parse_program "double(x) { return (x + x); }"
+    = [
+        {
+          Ast.name = "double";
+          params = [ "x" ];
+          body =
+            Ast.Block
+              [
+                Ast.Return
+                  (Some
+                     (Ast.Binop
+                        ( Ast.Add,
+                          Ast.Read (Ast.Variable "x"),
+                          Ast.Read (Ast.Variable "x") )));
+              ];
+        };
+      ]);
+  assert (
+    parse_program "first() ; second(a, b) return (a + b);"
+    = [
+        { Ast.name = "first"; params = []; body = Ast.Null };
+        {
+          Ast.name = "second";
+          params = [ "a"; "b" ];
+          body =
+            Ast.Return
+              (Some
+                 (Ast.Binop
+                    ( Ast.Add,
+                      Ast.Read (Ast.Variable "a"),
+                      Ast.Read (Ast.Variable "b") )));
+        };
+      ])
+
+let expect_program_parser_error source =
+  try
+    ignore (parse_program source);
+    failwith ("Expected a parser error for program: " ^ source)
+  with Parser.Parser_error _ -> ()
+
+let test_invalid_function_definitions () =
+  expect_program_parser_error "";
+  expect_program_parser_error "42";
+  expect_program_parser_error "main { return; }";
+  expect_program_parser_error "f(x,) { return; }";
+  expect_program_parser_error "main() { return;"
+
 let () =
   test_integer_expression ();
   test_variable_expression ();
@@ -391,4 +450,6 @@ let () =
   test_while_statements ();
   test_invalid_if_and_while_statements ();
   test_null_statements ();
+  test_function_definitions ();
+  test_invalid_function_definitions ();
   print_endline "Parser tests passed"

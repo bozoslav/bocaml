@@ -42,3 +42,6 @@ type stmt =
   | Block of stmt list
   | If of expr * stmt * stmt option
   | While of expr * stmt
+
+type func = { name : string; params : string list; body : stmt }
+type program = func list
