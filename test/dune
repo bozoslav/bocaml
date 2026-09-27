@@ -5,3 +5,7 @@
 (test
  (name parser_test)
  (libraries bocaml))
+
+(test
+ (name codegen_test)
+ (libraries bocaml))
