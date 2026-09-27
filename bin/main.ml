@@ -60,6 +60,18 @@ let rec string_of_statement = function
   | Ast.Block statements ->
       Printf.sprintf "Block([%s])"
         (String.concat ", " (List.map string_of_statement statements))
+  | Ast.If (condition, then_branch, else_branch) ->
+      let else_branch =
+        match else_branch with
+        | None -> "None"
+        | Some statement -> "Some " ^ string_of_statement statement
+      in
+      Printf.sprintf "If(%s, %s, %s)" (string_of_expr condition)
+        (string_of_statement then_branch)
+        else_branch
+  | Ast.While (condition, body) ->
+      Printf.sprintf "While(%s, %s)" (string_of_expr condition)
+        (string_of_statement body)
 
 let string_of_token = function
   | Bocaml.Token.Int n -> "Int " ^ string_of_int n

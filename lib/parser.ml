@@ -240,8 +240,28 @@ let rec parse_statement_rest tokens =
       | Token.RParen :: _ -> raise (Parser_error "Expected ';' after return")
       | _ -> raise (Parser_error "Expected ')' after return expression")
       end
-  | Token.Return :: _ ->
-      raise (Parser_error "Expected ';' or '(' after return")
+  | Token.Return :: _ -> raise (Parser_error "Expected ';' or '(' after return")
+  | Token.If :: Token.LParen :: rest ->
+      let condition, rest = parse_expr rest in
+      begin match rest with
+      | Token.RParen :: rest ->
+          let then_branch, rest = parse_statement_rest rest in
+          begin match rest with
+          | Token.Else :: rest ->
+              let else_branch, rest = parse_statement_rest rest in
+              (Ast.If (condition, then_branch, Some else_branch), rest)
+          | _ -> (Ast.If (condition, then_branch, None), rest)
+          end
+      | _ -> raise (Parser_error "Expected ')' after if condition")
+      end
+  | Token.While :: Token.LParen :: rest ->
+      let condition, rest = parse_expr rest in
+      begin match rest with
+      | Token.RParen :: rest ->
+          let body, rest = parse_statement_rest rest in
+          (Ast.While (condition, body), rest)
+      | _ -> raise (Parser_error "Expected ')' after while condition")
+      end
   | _ ->
       let expr, rest = parse_expr tokens in
       begin match rest with

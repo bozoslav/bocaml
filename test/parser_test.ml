@@ -285,8 +285,63 @@ let test_block_statements () =
           Ast.Return None;
         ])
 
-let test_invalid_blocks () =
-  expect_statement_parser_error "{ count = 1;"
+let test_invalid_blocks () = expect_statement_parser_error "{ count = 1;"
+
+let test_if_statements () =
+  assert (
+    parse_statement "if (count) count = count - 1;"
+    = Ast.If
+        ( Ast.Read (Ast.Variable "count"),
+          Ast.Expression
+            (Ast.Assign
+               ( Ast.Variable "count",
+                 Ast.Binop (Ast.Sub, Ast.Read (Ast.Variable "count"), Ast.Int 1)
+               )),
+          None ));
+  assert (
+    parse_statement "if (count) { count = count - 1; } else { return (count); }"
+    = Ast.If
+        ( Ast.Read (Ast.Variable "count"),
+          Ast.Block
+            [
+              Ast.Expression
+                (Ast.Assign
+                   ( Ast.Variable "count",
+                     Ast.Binop
+                       (Ast.Sub, Ast.Read (Ast.Variable "count"), Ast.Int 1) ));
+            ],
+          Some
+            (Ast.Block [ Ast.Return (Some (Ast.Read (Ast.Variable "count"))) ])
+        ));
+  assert (
+    parse_statement "if (a) if (b) x = 1; else x = 2;"
+    = Ast.If
+        ( Ast.Read (Ast.Variable "a"),
+          Ast.If
+            ( Ast.Read (Ast.Variable "b"),
+              Ast.Expression (Ast.Assign (Ast.Variable "x", Ast.Int 1)),
+              Some (Ast.Expression (Ast.Assign (Ast.Variable "x", Ast.Int 2)))
+            ),
+          None ))
+
+let test_while_statements () =
+  assert (
+    parse_statement "while (count) count--;"
+    = Ast.While
+        ( Ast.Read (Ast.Variable "count"),
+          Ast.Expression (Ast.PostDecrement (Ast.Variable "count")) ));
+  assert (
+    parse_statement "while (count) { count--; }"
+    = Ast.While
+        ( Ast.Read (Ast.Variable "count"),
+          Ast.Block
+            [ Ast.Expression (Ast.PostDecrement (Ast.Variable "count")) ] ))
+
+let test_invalid_if_and_while_statements () =
+  expect_statement_parser_error "if count x = 1;";
+  expect_statement_parser_error "if (count)";
+  expect_statement_parser_error "else x = 2;";
+  expect_statement_parser_error "while (count { count--; }"
 
 let () =
   test_integer_expression ();
@@ -324,4 +379,7 @@ let () =
   test_invalid_statements ();
   test_block_statements ();
   test_invalid_blocks ();
+  test_if_statements ();
+  test_while_statements ();
+  test_invalid_if_and_while_statements ();
   print_endline "Parser tests passed"
