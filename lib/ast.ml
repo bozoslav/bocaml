@@ -35,4 +35,4 @@ and lvalue =
   | Dereference of expr
   | Subscript of expr * expr
 
-type stmt = Expression of expr | Return of expr option
+type stmt = Expression of expr | Return of expr option | Block of stmt list

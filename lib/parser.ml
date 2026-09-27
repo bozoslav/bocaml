@@ -229,26 +229,37 @@ and parse_arguments_rest reversed_arguments tokens =
   | Token.RParen :: rest -> (List.rev reversed_arguments, rest)
   | _ -> raise (Parser_error "Expected ',' or ')' in function arguments")
 
+let rec parse_statement_rest tokens =
+  match tokens with
+  | Token.LBrace :: rest -> parse_block rest []
+  | Token.Return :: Token.Semi :: rest -> (Ast.Return None, rest)
+  | Token.Return :: Token.LParen :: rest ->
+      let expr, rest = parse_expr rest in
+      begin match rest with
+      | Token.RParen :: Token.Semi :: rest -> (Ast.Return (Some expr), rest)
+      | Token.RParen :: _ -> raise (Parser_error "Expected ';' after return")
+      | _ -> raise (Parser_error "Expected ')' after return expression")
+      end
+  | Token.Return :: _ ->
+      raise (Parser_error "Expected ';' or '(' after return")
+  | _ ->
+      let expr, rest = parse_expr tokens in
+      begin match rest with
+      | Token.Semi :: rest -> (Ast.Expression expr, rest)
+      | _ -> raise (Parser_error "Expected ';' after expression")
+      end
+
+and parse_block tokens reversed_statements =
+  match tokens with
+  | Token.RBrace :: rest -> (Ast.Block (List.rev reversed_statements), rest)
+  | Token.Eof :: _ -> raise (Parser_error "Expected '}' before end of input")
+  | [] -> raise (Parser_error "Expected '}' before end of input")
+  | _ ->
+      let statement, rest = parse_statement_rest tokens in
+      parse_block rest (statement :: reversed_statements)
+
 let parse_statement tokens =
-  let statement, rest =
-    match tokens with
-    | Token.Return :: Token.Semi :: rest -> (Ast.Return None, rest)
-    | Token.Return :: Token.LParen :: rest ->
-        let expr, rest = parse_expr rest in
-        begin match rest with
-        | Token.RParen :: Token.Semi :: rest -> (Ast.Return (Some expr), rest)
-        | Token.RParen :: _ -> raise (Parser_error "Expected ';' after return")
-        | _ -> raise (Parser_error "Expected ')' after return expression")
-        end
-    | Token.Return :: _ ->
-        raise (Parser_error "Expected ';' or '(' after return")
-    | _ ->
-        let expr, rest = parse_expr tokens in
-        begin match rest with
-        | Token.Semi :: rest -> (Ast.Expression expr, rest)
-        | _ -> raise (Parser_error "Expected ';' after expression")
-        end
-  in
+  let statement, rest = parse_statement_rest tokens in
   match rest with
   | [ Token.Eof ] -> statement
   | _ -> raise (Parser_error "Unexpected tokens after statement")

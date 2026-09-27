@@ -267,6 +267,27 @@ let test_invalid_statements () =
   expect_statement_parser_error "return count;";
   expect_statement_parser_error "return (count); extra;"
 
+let test_block_statements () =
+  assert (parse_statement "{}" = Ast.Block []);
+  assert (
+    parse_statement "{ count = 1; return (count); }"
+    = Ast.Block
+        [
+          Ast.Expression (Ast.Assign (Ast.Variable "count", Ast.Int 1));
+          Ast.Return (Some (Ast.Read (Ast.Variable "count")));
+        ]);
+  assert (
+    parse_statement "{ { count = 1; } return; }"
+    = Ast.Block
+        [
+          Ast.Block
+            [ Ast.Expression (Ast.Assign (Ast.Variable "count", Ast.Int 1)) ];
+          Ast.Return None;
+        ])
+
+let test_invalid_blocks () =
+  expect_statement_parser_error "{ count = 1;"
+
 let () =
   test_integer_expression ();
   test_variable_expression ();
@@ -301,4 +322,6 @@ let () =
   test_expression_statements ();
   test_return_statements ();
   test_invalid_statements ();
+  test_block_statements ();
+  test_invalid_blocks ();
   print_endline "Parser tests passed"

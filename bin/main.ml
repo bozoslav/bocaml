@@ -53,10 +53,13 @@ and string_of_lvalue = function
       Printf.sprintf "Subscript(%s, %s)" (string_of_expr array)
         (string_of_expr index)
 
-let string_of_statement = function
+let rec string_of_statement = function
   | Ast.Expression expr -> Printf.sprintf "Expression(%s)" (string_of_expr expr)
   | Ast.Return None -> "Return"
   | Ast.Return (Some expr) -> Printf.sprintf "Return(%s)" (string_of_expr expr)
+  | Ast.Block statements ->
+      Printf.sprintf "Block([%s])"
+        (String.concat ", " (List.map string_of_statement statements))
 
 let string_of_token = function
   | Bocaml.Token.Int n -> "Int " ^ string_of_int n
