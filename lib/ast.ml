@@ -39,6 +39,8 @@ type stmt =
   | Null
   | Expression of expr
   | Return of expr option
+  | Auto of string list * stmt
+  | Extrn of string list * stmt
   | Block of stmt list
   | If of expr * stmt * stmt option
   | While of expr * stmt

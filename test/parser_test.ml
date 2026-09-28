@@ -352,6 +352,46 @@ let test_null_statements () =
   assert (
     parse_statement "{ ; return; }" = Ast.Block [ Ast.Null; Ast.Return None ])
 
+let test_auto_and_extrn_declarations () =
+  assert (
+    parse_statement "auto x, y; return (x + y);"
+    = Ast.Auto
+        ( [ "x"; "y" ],
+          Ast.Return
+            (Some
+               (Ast.Binop
+                  ( Ast.Add,
+                    Ast.Read (Ast.Variable "x"),
+                    Ast.Read (Ast.Variable "y") ))) ));
+  assert (
+    parse_statement "extrn putchar; putchar(65);"
+    = Ast.Extrn
+        ( [ "putchar" ],
+          Ast.Expression
+            (Ast.Call (Ast.Read (Ast.Variable "putchar"), [ Ast.Int 65 ])) ));
+  assert (
+    parse_program "main() { auto value; return (value); }"
+    = [
+        {
+          Ast.name = "main";
+          params = [];
+          body =
+            Ast.Block
+              [
+                Ast.Auto
+                  ( [ "value" ],
+                    Ast.Return (Some (Ast.Read (Ast.Variable "value"))) );
+              ];
+        };
+      ])
+
+let test_invalid_declarations () =
+  expect_statement_parser_error "auto; return;";
+  expect_statement_parser_error "auto x,; return;";
+  expect_statement_parser_error "auto x";
+  expect_statement_parser_error "auto x;";
+  expect_statement_parser_error "extrn putchar return;"
+
 let test_function_definitions () =
   assert (
     parse_program "main() { return (42); }"
@@ -450,6 +490,8 @@ let () =
   test_while_statements ();
   test_invalid_if_and_while_statements ();
   test_null_statements ();
+  test_auto_and_extrn_declarations ();
+  test_invalid_declarations ();
   test_function_definitions ();
   test_invalid_function_definitions ();
   print_endline "Parser tests passed"

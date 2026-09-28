@@ -58,6 +58,16 @@ let rec string_of_statement = function
   | Ast.Expression expr -> Printf.sprintf "Expression(%s)" (string_of_expr expr)
   | Ast.Return None -> "Return"
   | Ast.Return (Some expr) -> Printf.sprintf "Return(%s)" (string_of_expr expr)
+  | Ast.Auto (names, body) ->
+      Printf.sprintf "Auto([%s], %s)"
+        (String.concat ", "
+           (List.map (fun name -> Printf.sprintf "%S" name) names))
+        (string_of_statement body)
+  | Ast.Extrn (names, body) ->
+      Printf.sprintf "Extrn([%s], %s)"
+        (String.concat ", "
+           (List.map (fun name -> Printf.sprintf "%S" name) names))
+        (string_of_statement body)
   | Ast.Block statements ->
       Printf.sprintf "Block([%s])"
         (String.concat ", " (List.map string_of_statement statements))

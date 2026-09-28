@@ -1,15 +1,19 @@
 (test
  (name lexer_test)
+ (modules lexer_test)
  (libraries bocaml))
 
 (test
  (name parser_test)
+ (modules parser_test)
  (libraries bocaml))
 
 (test
  (name codegen_test)
+ (modules codegen_test)
  (libraries bocaml))
 
 (test
  (name llvm_codegen_test)
+ (modules llvm_codegen_test)
  (libraries bocaml))

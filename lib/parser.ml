@@ -229,10 +229,32 @@ and parse_arguments_rest reversed_arguments tokens =
   | Token.RParen :: rest -> (List.rev reversed_arguments, rest)
   | _ -> raise (Parser_error "Expected ',' or ')' in function arguments")
 
+let rec parse_declaration_names tokens =
+  match tokens with
+  | Token.Name name :: rest -> parse_declaration_names_rest [ name ] rest
+  | _ -> raise (Parser_error "Expected a name in declaration")
+
+and parse_declaration_names_rest reversed_names tokens =
+  match tokens with
+  | Token.Comma :: Token.Name name :: rest ->
+      parse_declaration_names_rest (name :: reversed_names) rest
+  | Token.Comma :: _ ->
+      raise (Parser_error "Expected a name after ',' in declaration")
+  | Token.Semi :: rest -> (List.rev reversed_names, rest)
+  | _ -> raise (Parser_error "Expected ',' or ';' in declaration")
+
 let rec parse_statement_rest tokens =
   match tokens with
   | Token.Semi :: rest -> (Ast.Null, rest)
   | Token.LBrace :: rest -> parse_block rest []
+  | Token.Auto :: rest ->
+      let names, rest = parse_declaration_names rest in
+      let body, rest = parse_statement_rest rest in
+      (Ast.Auto (names, body), rest)
+  | Token.Extrn :: rest ->
+      let names, rest = parse_declaration_names rest in
+      let body, rest = parse_statement_rest rest in
+      (Ast.Extrn (names, body), rest)
   | Token.Return :: Token.Semi :: rest -> (Ast.Return None, rest)
   | Token.Return :: Token.LParen :: rest ->
       let expr, rest = parse_expr rest in
